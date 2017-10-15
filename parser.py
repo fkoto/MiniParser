@@ -3,6 +3,7 @@
 import os
 import sys
 import glob
+import traceback
 
 #set of comms to be used by 'all' operations (i.e. AllReduce)
 commDict = {}
@@ -110,7 +111,7 @@ def parseLine(line):
 			splitted = line.split()
 			temp = []
 			temp.append(splitted[1]) #op
-			temp.append(str(int(splitted[2]) * int(splitted[5]))) #payload
+			temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
 			temp.append(splitted[-2]) #comm
 			if splitted[-1] in counterDict:
 				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
@@ -154,7 +155,7 @@ def parseLine(line):
 				temp.append(splitted[1]) #operation
 				temp.append(splitted[6]) #root
 				temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
-				if int(splitted[7]) < 100: #MPI_Datatype type
+				if int(splitted[9]) < 100: #MPI_Datatype type
 					temp.append("contig")
 				else:
 					temp.append("no contig")
@@ -191,6 +192,7 @@ def parseLine(line):
 		return ()
 	except:
 		print "Exception for line: " + line + " Ignoring!"
+		traceback.print_exc()
 		return ()
 
 #
