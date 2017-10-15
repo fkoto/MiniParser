@@ -73,6 +73,38 @@ def parseLine(line):
 				temp.append("on comm " + splitted[-1])
 			return tuple(temp)
 
+		if (containsOneOf(multiAllv, line)):
+			splitted = line.split()
+			temp = []
+			temp.append(splitted[1]) #op
+			temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4])#payload
+			temp.append(splitted[-2]) #comm
+			if ('type' == splitted[8]): #MPI_Datatype type
+				if int(splitted[9]) < 100:
+					temp.append("contig")
+				else:
+					temp.append("no contig")
+			else:
+				if ((int(splitted[10]) < 100) and (int(splitted[9][:-1]) < 100)):
+					temp.append("contig")
+				else:
+					temp.append("no contig")
+
+			if splitted[-1] in counterDict:
+				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
+					print 'commiting'
+					#all found
+					del counterDict[splitted[-1]]
+					return tuple(temp)
+				else:
+					print 'increasing'
+					counterDict[splitted[-1]] += 1 #add one more
+			else:
+				print 'new id'
+				counterDict[splitted[-1]] = 1 #add new id
+				
+			return ()
+
 		if (containsOneOf(multiAll, line)):
 			#TODO add implementation
 			splitted = line.split()
@@ -95,6 +127,25 @@ def parseLine(line):
 				
 			return ()
 
+		if (containsOneOf(multiv, line)):
+			splitted = line.split()
+			if splitted[0] == splitted[8]:
+				temp = []
+				temp.append(splitted[1]) #op
+				temp.append(splitted[6]) #root
+				temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4]) #payload
+				if int(splitted[6]) < 100: #MPI_Datatype type
+					temp.append("contig")
+				else:
+					temp.append("no contig")
+				if (splitted[-1] != "MPI_COMM_WORLD"):
+					temp.append("on comm " + splitted[-1]) #comm
+				return tuple(temp)
+			else:
+				return ()
+
+	
+
 		if (containsOneOf(multi, line)):
 			#print "found multi: " + line
 			splitted = line.split()
@@ -114,7 +165,6 @@ def parseLine(line):
 				return ()
 
 		if (containsOneOf(comm, line)):
-			#TODO add implementation
 			if ('split' in line):
 				if not ('UNDEFINED' in line):
 					splitted = line.split('.')
