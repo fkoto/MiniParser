@@ -10,12 +10,12 @@ commDict = {}
 counterDict = {}
 
 #list of different MPI messages
-ignore = ["init", "barrier", "recv", "Irecv", "finalize", "wait", "Phase"]
-p2p = ["send", "Rsend", "Bsend", "Ssend", "Isend"]	#probably only "send" may be sufficient. Needs testing.
+ignore = ["init", "barrier", "recv", "Irecv", "finalize", "wait", "waitall", "Phase", "free", "Sendrecv(r)", "Tested"]
+p2p = ["send", "Rsend", "Bsend", "Ssend", "Isend", "Sendrecv(s)"]
 multi = ["reduce", "gather", "bcast", "scatter"]
 multiv = ["gatherv", "scatterv"]
-multiAll = ["allReduce", "allGather"]
-multiAllv = ["allGatherv", "allToAllv"]
+multiAll = ["allReduce", "allGather", "allToAll", "reduceScatter"]
+multiAllv = ["allgatherv", "allToAllv"]
 comm = ["split"]
 
 def containsOneOf(lst, string):
@@ -68,10 +68,10 @@ def parseLine(line):
 			if int(splitted[7]) < 100: #MPI_Datatype type
 				temp.append("contig")
 			else:
-				temp.append("no contig")
+				temp.append("no_contig")
 
-			if (splitted[-1] != "MPI_COMM_WORLD"):
-				temp.append("on comm " + splitted[-1])
+			temp.append(splitted[-1])
+
 			return tuple(temp)
 
 		if (containsOneOf(multiAllv, line)):
@@ -84,12 +84,12 @@ def parseLine(line):
 				if int(splitted[9]) < 100:
 					temp.append("contig")
 				else:
-					temp.append("no contig")
+					temp.append("no_contig")
 			else:
 				if ((int(splitted[10]) < 100) and (int(splitted[9][:-1]) < 100)):
 					temp.append("contig")
 				else:
-					temp.append("no contig")
+					temp.append("no_contig")
 
 			if splitted[-1] in counterDict:
 				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
@@ -138,9 +138,10 @@ def parseLine(line):
 				if int(splitted[6]) < 100: #MPI_Datatype type
 					temp.append("contig")
 				else:
-					temp.append("no contig")
-				if (splitted[-1] != "MPI_COMM_WORLD"):
-					temp.append("on comm " + splitted[-1]) #comm
+					temp.append("no_contig")
+				
+				temp.append(splitted[-1]) #comm
+
 				return tuple(temp)
 			else:
 				return ()
@@ -155,12 +156,19 @@ def parseLine(line):
 				temp.append(splitted[1]) #operation
 				temp.append(splitted[6]) #root
 				temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
-				if int(splitted[9]) < 100: #MPI_Datatype type
-					temp.append("contig")
+				if "types" in line:
+					if int(splitted[9].replace(",", "")) < 100 and int(splitted[10]) < 100:
+						temp.append("contig")
+					else:
+						temp.append("no_contig")
 				else:
-					temp.append("no contig")
-				if (splitted[-1] != "MPI_COMM_WORLD"):
-					temp.append("on comm " + splitted[-1]) #comm
+					if int(splitted[9]) < 100: #MPI_Datatype type
+						temp.append("contig")
+					else:
+						temp.append("no_contig")
+					
+				temp.append(splitted[-1]) #comm
+
 				return tuple(temp)
 			else:
 				return ()
