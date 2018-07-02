@@ -80,13 +80,13 @@ def parseLine(line):
 			temp.append(splitted[1]) #op
 			temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4])#payload
 			temp.append(splitted[-2]) #comm
-			if ('type' == splitted[8]): #MPI_Datatype type
-				if int(splitted[9]) < 100:
+			if ('types' in line): #MPI_Datatype type
+				if ((int(splitted[10]) < 100) and (int(splitted[9].replace(",", "")) < 100)):
 					temp.append("contig")
 				else:
 					temp.append("no_contig")
 			else:
-				if ((int(splitted[10]) < 100) and (int(splitted[9][:-1]) < 100)):
+				if int(splitted[9]) < 100:
 					temp.append("contig")
 				else:
 					temp.append("no_contig")
@@ -107,16 +107,26 @@ def parseLine(line):
 			return ()
 
 		if (containsOneOf(multiAll, line)):
-			#TODO add implementation
 			splitted = line.split()
-			temp = []
-			temp.append(splitted[1]) #op
-			temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
-			temp.append(splitted[-2]) #comm
 			if splitted[-1] in counterDict:
 				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
 					print 'commiting'
 					#all found
+					temp = []
+					temp.append(splitted[1]) #op
+					temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
+					temp.append(splitted[-2]) #comm
+					if ('types' in line): #MPI_Datatype type
+						if ((int(splitted[10]) < 100) and (int(splitted[9].replace(",", "")) < 100)):
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+					else:
+						if int(splitted[9]) < 100:
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+
 					del counterDict[splitted[-1]]
 					return tuple(temp)
 				else:
@@ -133,20 +143,28 @@ def parseLine(line):
 			if splitted[0] == splitted[8]:
 				temp = []
 				temp.append(splitted[1]) #op
-				temp.append(splitted[6]) #root
-				temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4]) #payload
-				if int(splitted[6]) < 100: #MPI_Datatype type
-					temp.append("contig")
-				else:
-					temp.append("no_contig")
-				
+				temp.append(splitted[8]) #root
+				minStr = str(int(splitted[2].split('=')[-1]) * int(splitted[6]))
+				median = str(int(splitted[3].split('=')[-1]) * int(splitted[6]))
+				maxStr =  str(int(splitted[4].split('=')[-1]) * int(splitted[6]))
+				temp.append(minStr + '/' + median + '/' + maxStr) #payload
+				if ('types' in line): #MPI_Datatype type
+						if ((int(splitted[12]) < 100) and (int(splitted[11].replace(",", "")) < 100)):
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+					else:
+						if int(splitted[11]) < 100:
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+
+
 				temp.append(splitted[-1]) #comm
 
 				return tuple(temp)
 			else:
 				return ()
-
-	
 
 		if (containsOneOf(multi, line)):
 			#print "found multi: " + line
