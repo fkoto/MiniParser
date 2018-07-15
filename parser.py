@@ -15,7 +15,7 @@ p2p = ["send", "Rsend", "Bsend", "Ssend", "Isend", "Sendrecv(s)"]
 multi = ["reduce", "gather", "bcast", "scatter"]
 multiv = ["gatherv", "scatterv"]
 multiAll = ["allReduce", "allGather", "allToAll", "reduceScatter"]
-multiAllv = ["allgatherv", "allToAllv"]
+multiAllv = ["allgatherv", "alltoAllv"]
 comm = ["split"]
 
 def containsOneOf(lst, string):
@@ -76,25 +76,29 @@ def parseLine(line):
 
 		if (containsOneOf(multiAllv, line)):
 			splitted = line.split()
-			temp = []
-			temp.append(splitted[1]) #op
-			temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4])#payload
-			temp.append(splitted[-2]) #comm
-			if ('types' in line): #MPI_Datatype type
-				if ((int(splitted[10]) < 100) and (int(splitted[9].replace(",", "")) < 100)):
-					temp.append("contig")
-				else:
-					temp.append("no_contig")
-			else:
-				if int(splitted[9]) < 100:
-					temp.append("contig")
-				else:
-					temp.append("no_contig")
+			if (int(splitted[-1]) < 0):
+				print 'UNKNOWN COMM for:' + line
+				return ()
 
 			if splitted[-1] in counterDict:
 				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
 					print 'commiting'
 					#all found
+					temp = []
+					temp.append(splitted[1]) #op
+					temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4])#payload
+					temp.append(splitted[-2]) #comm
+					if ('types' in line): #MPI_Datatype type
+						if ((int(splitted[11]) < 100) and (int(splitted[10].replace(",", "")) < 100)):
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+					else:
+						if int(splitted[10]) < 100:
+							temp.append("contig")
+						else:
+							temp.append("no_contig")
+
 					del counterDict[splitted[-1]]
 					return tuple(temp)
 				else:
@@ -108,6 +112,10 @@ def parseLine(line):
 
 		if (containsOneOf(multiAll, line)):
 			splitted = line.split()
+			if (int(splitted[-1]) < 0):
+				print 'UNKNOWN COMM for:' + line
+				return ()
+
 			if splitted[-1] in counterDict:
 				if (counterDict[splitted[-1]] + 1) == int(commDict[splitted[-2]]['size']):
 					print 'commiting'
@@ -117,12 +125,12 @@ def parseLine(line):
 					temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
 					temp.append(splitted[-2]) #comm
 					if ('types' in line): #MPI_Datatype type
-						if ((int(splitted[10]) < 100) and (int(splitted[9].replace(",", "")) < 100)):
+						if ((int(splitted[9]) < 100) and (int(splitted[8].replace(",", "")) < 100)):
 							temp.append("contig")
 						else:
 							temp.append("no_contig")
 					else:
-						if int(splitted[9]) < 100:
+						if int(splitted[8]) < 100:
 							temp.append("contig")
 						else:
 							temp.append("no_contig")
@@ -149,16 +157,15 @@ def parseLine(line):
 				maxStr =  str(int(splitted[4].split('=')[-1]) * int(splitted[6]))
 				temp.append(minStr + '/' + median + '/' + maxStr) #payload
 				if ('types' in line): #MPI_Datatype type
-						if ((int(splitted[12]) < 100) and (int(splitted[11].replace(",", "")) < 100)):
-							temp.append("contig")
-						else:
-							temp.append("no_contig")
+					if ((int(splitted[12]) < 100) and (int(splitted[11].replace(",", "")) < 100)):
+						temp.append("contig")
 					else:
-						if int(splitted[11]) < 100:
-							temp.append("contig")
-						else:
-							temp.append("no_contig")
-
+						temp.append("no_contig")
+				else:
+					if int(splitted[11]) < 100:
+						temp.append("contig")
+					else:
+						temp.append("no_contig")
 
 				temp.append(splitted[-1]) #comm
 
