@@ -148,7 +148,7 @@ def parseLine(line):
 
 		if (containsOneOf(multiv, line)):
 			splitted = line.split()
-			if splitted[0] == splitted[8]:
+			if (('MPI_COMM_WORLD' in line) and (splitted[0] == splitted[8])) or (('MPI_COMM_WORLD' not in line) and (splitted[8] == splitted[-1])):
 				temp = []
 				temp.append(splitted[1]) #op
 				temp.append(splitted[8]) #root
@@ -167,7 +167,10 @@ def parseLine(line):
 					else:
 						temp.append("no_contig")
 
-				temp.append(splitted[-1]) #comm
+				if 'MPI_COMM_WORLD' in line:
+					temp.append(splitted[-1]) #comm
+				else:
+					temp.append(splitted[-2])
 
 				return tuple(temp)
 			else:
@@ -176,7 +179,7 @@ def parseLine(line):
 		if (containsOneOf(multi, line)):
 			#print "found multi: " + line
 			splitted = line.split()
-			if splitted[0] == splitted[6]:
+			if  (('MPI_COMM_WORLD' in line) and (splitted[0] == splitted[6])) or (('MPI_COMM_WORLD' not in line) and (splitted[6] == splitted[-1])):
 				temp = []
 				temp.append(splitted[1]) #operation
 				temp.append(splitted[6]) #root
@@ -192,7 +195,10 @@ def parseLine(line):
 					else:
 						temp.append("no_contig")
 					
-				temp.append(splitted[-1]) #comm
+				if 'MPI_COMM_WORLD' in line:
+					temp.append(splitted[-1]) #comm
+				else:
+					temp.append(splitted[-2])
 
 				return tuple(temp)
 			else:
