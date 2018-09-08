@@ -86,8 +86,12 @@ def parseLine(line):
 					#all found
 					temp = []
 					temp.append(splitted[1]) #op
-					temp.append(splitted[2] + ',' + splitted[3] + ',' + splitted[4])#payload
-					temp.append(splitted[-2]) #comm
+
+					minStr = str(int(splitted[2].split('=')[-1]) * int(splitted[6]))
+					median = str(float(splitted[3].split('=')[-1]) * float(splitted[6]))
+					maxStr =  str(int(splitted[4].split('=')[-1]) * int(splitted[6]))
+					temp.append(minStr + '/' + median + '/' + maxStr) #payload
+
 					if ('types' in line): #MPI_Datatype type
 						if ((int(splitted[11]) < 100) and (int(splitted[10].replace(",", "")) < 100)):
 							temp.append("contig")
@@ -98,6 +102,8 @@ def parseLine(line):
 							temp.append("contig")
 						else:
 							temp.append("no_contig")
+
+					temp.append(splitted[-2]) #comm
 
 					del counterDict[splitted[-1]]
 					return tuple(temp)
@@ -123,7 +129,6 @@ def parseLine(line):
 					temp = []
 					temp.append(splitted[1]) #op
 					temp.append(str(int(splitted[2]) * int(splitted[4]))) #payload
-					temp.append(splitted[-2]) #comm
 					if ('types' in line): #MPI_Datatype type
 						if ((int(splitted[9]) < 100) and (int(splitted[8].replace(",", "")) < 100)):
 							temp.append("contig")
@@ -134,6 +139,8 @@ def parseLine(line):
 							temp.append("contig")
 						else:
 							temp.append("no_contig")
+
+					temp.append(splitted[-2]) #comm
 
 					del counterDict[splitted[-1]]
 					return tuple(temp)
@@ -153,7 +160,7 @@ def parseLine(line):
 				temp.append(splitted[1]) #op
 				temp.append(splitted[8]) #root
 				minStr = str(int(splitted[2].split('=')[-1]) * int(splitted[6]))
-				median = str(int(splitted[3].split('=')[-1]) * int(splitted[6]))
+				median = str(float(splitted[3].split('=')[-1]) * float(splitted[6]))
 				maxStr =  str(int(splitted[4].split('=')[-1]) * int(splitted[6]))
 				temp.append(minStr + '/' + median + '/' + maxStr) #payload
 				if ('types' in line): #MPI_Datatype type
